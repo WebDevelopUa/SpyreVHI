@@ -6,6 +6,8 @@
 # pip install dataspyre
 # pip install googlefinance.client
 
+# http://127.0.0.1:9093
+
 from spyre import server
 from googlefinance.client import get_price_data
 

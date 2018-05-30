@@ -18,25 +18,28 @@
 from spyre import server
 
 
-class SpyreVHI(server.App):
-    title = "Spyre VHI"
+class SpyreInputDisplay(server.App):
+    title = "Spyre Input Data Display"
     inputs = [{
         "type": "text",
         "key": "words",
-        "label": "write words here",
-        "value": "hello world",
-        "action_id": "simple_html_output"
+        "label": "изменить значение + ENTER",
+        "value": "значение по умолчанию",
+        "action_id": "html_output"
     }]
 
     outputs = [{
         "type": "html",
-        "id": "simple_html_output"
+        "id": "html_output"
     }]
 
     def getHTML(self, params):
         words = params["words"]
-        return "Here's what you wrote in the textbox: <b>%s</b>" % words
+        return "&nbsp; Вот что вы написали в текстовом поле: <br/><br/><br/><b>&nbsp; %s</b>" % words
 
 
-app = SpyreVHI()
-app.launch()
+if __name__ == '__main__':
+    app = SpyreInputDisplay()
+
+    # запуск приложения http://127.0.0.1:9090
+    app.launch(port=9090)

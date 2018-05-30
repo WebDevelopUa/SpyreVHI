@@ -7,6 +7,8 @@
  
  https://youtu.be/NPV2hHV6hxY
  
+ https://github.com/adamhajari/spyre/tree/master/examples
+ 
 
 #### Requirements | Требования для запуска приложения:
 
