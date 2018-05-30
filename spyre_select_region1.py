@@ -1,24 +1,30 @@
 # coding=utf-8
-# Spyre Скрипт, позволяющий выбирать из списков параметры для отображения в табличном виде и гистограмме в веб-браузере
+# Spyre Скрипт, позволяющий выбирать из списка файл для отображения в табличном виде и на гистограмме в веб-браузере
+# https://docs.python.org/3.1/library/csv.html
 
 import pandas as pd
 from spyre import server
-from googlefinance.client import get_price_data
 
 server.include_df_index = True
 
 
-class SpyreVHI(server.App):
+class SpyreSelectVHI(server.App):
     # заголовок
-    title = "Spyre VHI"
+    title = "Spyre Select VHI"
 
-    # выпадающий список с областями
+    # выпадающий список с файлами из директории .csv (объявлено далее в getData())
     inputs = [{
         "type": "dropdown",
-        "label": "Область",
+        "id": "file",
+        "key": 'file',
+
         "options": [
-            {"label": "Cherkasy | Черкасская", "value": "id_22"},
-            {"label": "Chernihiv | Черниговская", "value": "id_24"},
+            {"label": "2017 | Киевская", "value": '2017-id09-kiev.csv'},
+            {"label": "2018 | Киевская", "value": '2018-id09-kiev.csv'},
+            {"label": "2017-2018 | Киевская", "value": '2017-2018-id09-kiev.csv'},
+
+            {"label": "Cherkasy | Черкасская", "value": 'new_id_22_2018-05-27_14-33.csv'},
+            {"label": "Chernihiv | Черниговская", "value": "new_id_24_2018-05-27_14-33.csv"},
             {"label": "Chernivtsi | Черновицкая", "value": "id_23"},
             {"label": "Crimea | АР Крым", "value": "id_25"},
             {"label": "Dnipropetrovsk | Днепропетровская", "value": "id_03"},
@@ -42,15 +48,14 @@ class SpyreVHI(server.App):
             {"label": "Volyn | Волынская", "value": "id_02"},
             {"label": "Zaporizhzhya | Запорожская", "value": "id_07"},
             {"label": "Zhytomyr | Житомирская", "value": "id_05"},
-            {"label": "Amazon", "value": "AMZN"},
-            {"label": "Apple", "value": "AAPL"}],
-        # "value": "id_12",
-        "value": "AMZN",
-        "key": 'ticker',
+        ],
+
+        # значение по умолчанию
+        "value": "2018-id09-kiev.csv",
         "action_id": "update_data"
     }]
 
-    # кнопка
+    # кнопка ("Get Data | Загрузить данные")
     controls = [{
         "type": "button",
         "id": "update_data",
@@ -82,30 +87,26 @@ class SpyreVHI(server.App):
 
     ]
 
-    # метод получения данных данные
     def getData(self, params):
-        ticker = params['ticker']
-        if ticker == 'empty':
-            ticker = params['custom_ticker'].upper()
-
-        xchng = "NASD"
-        param = {
-            'q': ticker,  # Stock symbol (ex: "AAPL")
-            'i': "86400",  # Interval size in seconds ("86400" = 1 day intervals)
-            'x': xchng,  # Stock exchange symbol on which stock is traded (ex: "NASD")
-            'p': "3M"  # Period (Ex: "1Y" = 1 year)
-        }
-        df = get_price_data(param)
+        filename = params["file"]
+        df = pd.read_csv("csv/" + filename,
+                         delimiter='\,\s+|\,|\s+',
+                         engine='python',
+                         index_col=False,
+                         names=["year", "week", "SMN", "SMK", "VCI", "TCI", "VHI"]
+                         )
         return df
 
-    # метод построения графика
+    #  функция построения графика
     def getPlot(self, params):
-        df = self.getData(params).drop(['Volume'], axis=1)
+        df = self.getData(params).drop(['SMN', 'SMK'], axis=1).set_index(['week', 'year'])
         plt_obj = df.plot()
-        plt_obj.set_ylabel("Price")
-        plt_obj.set_xlabel("Date")
-        plt_obj.set_title(params['ticker'])
-        return plt_obj.get_figure()
+        plt_obj.set_ylabel("y - indexes, %")
+        plt_obj.set_xlabel("x - selected period (week | year)")
+        plt_obj.set_title("Weekly display of Data for the selected period")
+        plt_obj.grid()
+        fig = plt_obj.get_figure()
+        return fig
 
     # метод стилизации
     def getCustomCSS(self):
@@ -121,7 +122,7 @@ class SpyreVHI(server.App):
 
 
 if __name__ == '__main__':
-    app = SpyreVHI()
+    app = SpyreSelectVHI()
 
-    # запуск приложения http://127.0.0.1:9096
-    app.launch(port=9096)
+    # запуск приложения http://127.0.0.1:9094
+    app.launch(port=9094)

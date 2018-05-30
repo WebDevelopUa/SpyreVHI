@@ -21,10 +21,24 @@
 ```
 # pip install dataspyre
 ```
+spyre_install_example.py
 
- http://127.0.0.1:8080/
+ http://127.0.0.1:9090
  
+ 
+spyre_select_file1.py
 
+http://127.0.0.1:9095
+
+
+spyre_select_region1.py
+
+http://127.0.0.1:9094
+
+
+spyre_upload_vhi.py
+
+http://127.0.0.1:9097
 
 ------
  

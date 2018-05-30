@@ -13,7 +13,7 @@
 # Требования для запуска приложения:
 # Python, cherrypy, jinja2, pandas, matplotlib
 # pip install dataspyre
-# http://127.0.0.1:8080/
+# http://127.0.0.1:9090
 
 from spyre import server
 
