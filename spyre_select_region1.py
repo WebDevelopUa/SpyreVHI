@@ -1,6 +1,7 @@
 # coding=utf-8
 # Spyre Скрипт, позволяющий выбирать из списка файл для отображения в табличном виде и на гистограмме в веб-браузере
 # https://docs.python.org/3.1/library/csv.html
+# https://www.gradient-animator.com/
 
 import pandas as pd
 from spyre import server
@@ -111,8 +112,51 @@ class SpyreSelectVHI(server.App):
     # метод стилизации
     def getCustomCSS(self):
         css = (
-            "body { background: "
-            "linear-gradient(141deg, #0fb8ad 0%, #1fc8db 51%, #2cb5e8 75%) no-repeat fixed; }"
+            "body {  "
+            "width: 100wh;"
+            "height: 90vh;"
+            "color: #fff;"
+            "background: linear-gradient(-45deg, #23D5AB, #23A6D5, #ece71b, #36caa4);"
+            # "background: linear-gradient(-45deg, #EE7752, #E73C7E, #23A6D5, #23D5AB);"
+            "background-size: 400% 400%;"
+            "-webkit-animation: Gradient 15s ease infinite;"
+            "-moz-animation: Gradient 15s ease infinite;"
+            "animation: Gradient 15s ease infinite;"
+            "}"
+            "@-webkit-keyframes Gradient {"
+            "	0% {"
+            "		background-position: 0% 50%"
+            "	}"
+            "	50% {"
+            "		background-position: 100% 50%"
+            "}"
+            "100% {"
+            "background-position: 0% 50%"
+            "}"
+            "}"
+            "@-moz-keyframes Gradient {"
+            "0% {"
+            "background-position: 0% 50%"
+            "}"
+            "50% {"
+            "background-position: 100% 50%"
+            "}"
+            "100% {"
+            "background-position: 0% 50%"
+            "}"
+            "}"
+            "@keyframes Gradient {"
+            "0% {"
+            "background-position: 0% 50%"
+            "}"
+            "	50% {"
+            "background-position: 100% 50%"
+            "}"
+            "100% {"
+            "background-position: 0% 50%"
+            "}"
+            "}"
+
         )
         return css
 
