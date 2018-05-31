@@ -6,7 +6,7 @@
 # Python, cherrypy, jinja2, pandas, matplotlib
 # pip install dataspyre
 
-# http://127.0.0.1:9097
+# http://127.0.0.1:9091
 
 import pandas as pd
 from spyre import server
@@ -109,5 +109,5 @@ class SpyreUploadVHI(server.App):
 if __name__ == '__main__':
     app = SpyreUploadVHI()
 
-    # запуск приложения http://127.0.0.1:9097
-    app.launch(port=9097)
+    # запуск приложения http://127.0.0.1:9091
+    app.launch(port=9091)

@@ -1,7 +1,9 @@
 # coding=utf-8
-# Spyre Скрипт, позволяющий выбирать из списка регион и год для отображения в табличном виде и на гистограмме
+# Spyre Скрипт, позволяющий выбирать из списка регион, год, неделю для отображения в табличном виде и на гистограмме
 # https://docs.python.org/3.1/library/csv.html
 # https://jeffdelaney.me/blog/useful-snippets-in-pandas/
+# https://docs.python.org/2/library/functions.html#range
+# https://www.pythoncentral.io/pythons-range-function-explained/
 
 import pandas as pd
 from spyre import server
@@ -65,10 +67,36 @@ class SpyreSelectYear(server.App):
             "type": "dropdown",
             "id": "year",
             "label": "Год",
+
             "options": [
                 {"label": year, "value": year} for year in range(1981, 2019)
             ],
+
             "key": "year",
+            "action_id": "update_data"
+        },
+
+        # выпадающий список (недели 1)
+        {
+            "type": "dropdown",
+            "id": "week",
+            "label": "Неделя c",
+            "options": [
+                {"label": week_from, "value": week_from} for week_from in range(01, 53)
+            ],
+            "key": "week_from",
+            "action_id": "update_data"
+        },
+
+        # выпадающий список (недели 2)
+        {
+            "type": "dropdown",
+            "id": "week",
+            "label": "Неделя по",
+            "options": [
+                {"label": week_to, "value": week_to} for week_to in range(01, 53)
+            ],
+            "key": "week_to",
             "action_id": "update_data"
         }
 
@@ -111,8 +139,11 @@ class SpyreSelectYear(server.App):
 
     #  функция считывания данных из файла (в DataFrame)
     def getData(self, params):
+        #  объявляем переменные
         filename = params["file"]
         year = int(params["year"])
+        week_from = int(params["week_from"])
+        week_to = int(params["week_to"])
 
         df = pd.read_csv("csv/" + filename,
                          delimiter='\,\s+|\,|\s+',
@@ -120,9 +151,13 @@ class SpyreSelectYear(server.App):
                          index_col=False,
                          names=["year", "week", "SMN", "SMK", "VCI", "TCI", "VHI"]
                          )
+
         # метод Pandas .ix (и .loc, iloc) позволяет выбрать конкретное значение «ячейки» (в DataFrame)
         df = df.ix[df.year == year]
-        return df
+
+        # Фильтрация DataFrames с условной логикой https://jeffdelaney.me/blog/useful-snippets-in-pandas/
+        filtered_data = df[(df.week >= week_from) & (df.week <= week_to)]
+        return filtered_data
 
     #  функция построения графика
     def getPlot(self, params):
@@ -193,5 +228,5 @@ class SpyreSelectYear(server.App):
 if __name__ == '__main__':
     app = SpyreSelectYear()
 
-    # запуск приложения http://127.0.0.1:9096
-    app.launch(port=9096)
+    # запуск приложения http://127.0.0.1:9097
+    app.launch(port=9097)
