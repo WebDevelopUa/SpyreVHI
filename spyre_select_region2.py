@@ -1,7 +1,7 @@
 # coding=utf-8
 # Spyre Скрипт, позволяющий выбирать из списка регион для отображения в табличном виде и на гистограмме в веб-браузере
 # https://docs.python.org/3.1/library/csv.html
-# https://www.gradient-animator.com/
+# https://jeffdelaney.me/blog/useful-snippets-in-pandas/
 
 import pandas as pd
 from spyre import server
@@ -9,9 +9,9 @@ from spyre import server
 server.include_df_index = True
 
 
-class SpyreSelectRegion(server.App):
+class SpyreSelectYear(server.App):
     # заголовок
-    title = "Spyre Select Region"
+    title = "Spyre Select Year"
 
     # выпадающий список с файлами из директории .csv ("csv/" - объявлено далее в getData())
     inputs = [
@@ -20,6 +20,7 @@ class SpyreSelectRegion(server.App):
         {
             "type": "dropdown",
             "id": "file",
+            "label": "Область",
             "key": 'file',
 
             "options": [
@@ -57,7 +58,20 @@ class SpyreSelectRegion(server.App):
             # значение по умолчанию
             "value": "2018-id09-kiev.csv",
             "action_id": "update_data"
+        },
+
+        # выпадающий список (годы)
+        {
+            "type": "dropdown",
+            "id": "year",
+            "label": "Год",
+            "options": [
+                {"label": year, "value": year} for year in range(1981, 2019)
+            ],
+            "key": "year",
+            "action_id": "update_data"
         }
+
     ]
 
     # кнопка ("Get Data | Загрузить данные")
@@ -67,11 +81,12 @@ class SpyreSelectRegion(server.App):
         "label": "Get Data | Загрузить данные"
     }]
 
-    # вкладки
+    # вкладки  (таблица, график, инфоблок)
     tabs = ["Table", "Plot", "Info"]
 
     # выходные данные (в таблицу, на график, в инфоблок)
     outputs = [
+
         {
             "type": "table",
             "id": "table_id",
@@ -79,6 +94,7 @@ class SpyreSelectRegion(server.App):
             "tab": "Table",
             "on_page_load": True
         },
+
         {
             "type": "plot",
             "id": "plot",
@@ -96,12 +112,16 @@ class SpyreSelectRegion(server.App):
     #  функция считывания данных из файла (в DataFrame)
     def getData(self, params):
         filename = params["file"]
+        year = int(params["year"])
+
         df = pd.read_csv("csv/" + filename,
                          delimiter='\,\s+|\,|\s+',
                          engine='python',
                          index_col=False,
                          names=["year", "week", "SMN", "SMK", "VCI", "TCI", "VHI"]
                          )
+        # метод Pandas .ix (и .loc, iloc) позволяет выбрать конкретное значение «ячейки» (в DataFrame)
+        df = df.ix[df.year == year]
         return df
 
     #  функция построения графика
@@ -122,7 +142,7 @@ class SpyreSelectRegion(server.App):
             "width: 100wh;"
             "height: 90vh;"
             "color: #fff;"
-            "background: linear-gradient(-45deg, #EE7752, #E73C7E, #23A6D5, #23D5AB);"
+            "background: linear-gradient(-45deg, #23D5AB, #23A6D5, #ece71b, #36caa4);"
             "background-size: 400% 400%;"
             "-webkit-animation: Gradient 15s ease infinite;"
             "-moz-animation: Gradient 15s ease infinite;"
@@ -171,7 +191,7 @@ class SpyreSelectRegion(server.App):
 
 
 if __name__ == '__main__':
-    app = SpyreSelectRegion()
+    app = SpyreSelectYear()
 
-    # запуск приложения http://127.0.0.1:9094
-    app.launch(port=9094)
+    # запуск приложения http://127.0.0.1:9096
+    app.launch(port=9096)

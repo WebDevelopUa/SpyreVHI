@@ -36,6 +36,11 @@ spyre_select_region1.py
 http://127.0.0.1:9094
 
 
+spyre_select_region2.py
+
+http://127.0.0.1:9096
+
+
 spyre_upload_vhi.py
 
 http://127.0.0.1:9097

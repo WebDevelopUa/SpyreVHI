@@ -9,28 +9,33 @@ from spyre import server
 server.include_df_index = True
 
 
-class SpyreSelectVHI(server.App):
+class SpyreSelectFile(server.App):
+
     # путь к директории с файлами
     path = "csv"
 
     # заголовок
-    title = "Spyre Select VHI"
+    title = "Spyre Select File"
 
     # выпадающий список с файлами из директории path (объявлено выше)
-    inputs = [{
-        "type": "dropdown",
-        "id": "file",
-        "key": 'file',
+    inputs = [
 
-        "label": "Область",
-        "options": [
-            {"label": filename, "value": filename} for filename in os.listdir(path)
-        ],
+        # выпадающий список (файлы)
+        {
+            "type": "dropdown",
+            "id": "file",
+            "key": 'file',
 
-        # значение по умолчанию
-        "value": "new_id.csv",
-        "action_id": "update_data"
-    }]
+            "label": "Область",
+            "options": [
+                {"label": filename, "value": filename} for filename in os.listdir(path)
+            ],
+
+            # значение по умолчанию
+            "value": "new_id.csv",
+            "action_id": "update_data"
+        }
+    ]
 
     # кнопка ("Get Data | Загрузить данные")
     controls = [{
@@ -64,6 +69,7 @@ class SpyreSelectVHI(server.App):
 
     ]
 
+    #  функция считывания данных из файла (в DataFrame)
     def getData(self, params):
         filename = params["file"]
         df = pd.read_csv("csv/" + filename,
@@ -99,7 +105,7 @@ class SpyreSelectVHI(server.App):
 
 
 if __name__ == '__main__':
-    app = SpyreSelectVHI()
+    app = SpyreSelectFile()
 
     # запуск приложения http://127.0.0.1:9095
     app.launch(port=9095)
