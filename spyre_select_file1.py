@@ -76,20 +76,20 @@ class SpyreSelectFile(server.App):
                          delimiter='\,\s+|\,|\s+',
                          engine='python',
                          index_col=False,
-                         names=["year", "week", "SMN", "SMK", "VCI", "TCI", "VHI"]
+                         names=["year", "week", "SMN", "SMT", "VCI", "TCI", "VHI"]
                          )
         return df
 
     #  функция построения графика
     def getPlot(self, params):
-        df = self.getData(params).drop(['SMN', 'SMK'], axis=1).set_index(['week', 'year'])
-        plt_obj = df.plot()
-        plt_obj.set_ylabel("y - indexes, %")
-        plt_obj.set_xlabel("x - selected period (week | year)")
-        plt_obj.set_title("Weekly display of Data for the selected period")
-        plt_obj.grid()
-        fig = plt_obj.get_figure()
-        return fig
+        df = self.getData(params).drop(['SMN', 'SMT'], axis=1).set_index(['week', 'year'])
+        plot_obj = df.plot()
+        plot_obj.set_ylabel("y - indexes, %")
+        plot_obj.set_xlabel("x - selected period (week | year)")
+        plot_obj.set_title("Weekly display of Data for the selected period")
+        plot_obj.grid()
+        line_plot = plot_obj.get_figure()
+        return line_plot
 
     # метод стилизации
     def getCustomCSS(self):

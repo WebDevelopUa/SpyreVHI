@@ -118,7 +118,7 @@ class SpyreSelectYear(server.App):
                          delimiter='\,\s+|\,|\s+',
                          engine='python',
                          index_col=False,
-                         names=["year", "week", "SMN", "SMK", "VCI", "TCI", "VHI"]
+                         names=["year", "week", "SMN", "SMT", "VCI", "TCI", "VHI"]
                          )
         # метод Pandas .ix (и .loc, iloc) позволяет выбрать конкретное значение «ячейки» (в DataFrame)
         df = df.ix[df.year == year]
@@ -126,14 +126,14 @@ class SpyreSelectYear(server.App):
 
     #  функция построения графика
     def getPlot(self, params):
-        df = self.getData(params).drop(['SMN', 'SMK'], axis=1).set_index(['week', 'year'])
-        plt_obj = df.plot()
-        plt_obj.set_ylabel("y - indexes, %")
-        plt_obj.set_xlabel("x - selected period (week | year)")
-        plt_obj.set_title("Weekly display of Data for the selected period")
-        plt_obj.grid()
-        fig = plt_obj.get_figure()
-        return fig
+        df = self.getData(params).drop(['year', 'SMN', 'SMT'], axis=1).set_index(['week'])
+        plot_obj = df.plot()
+        plot_obj.set_ylabel("y - indexes, %")
+        plot_obj.set_xlabel("x - selected period (week | year)")
+        plot_obj.set_title("Weekly display of Data for the selected period")
+        # plot_obj.grid()
+        line_plot = plot_obj.get_figure()
+        return line_plot
 
     # метод стилизации
     def getCustomCSS(self):
@@ -141,7 +141,7 @@ class SpyreSelectYear(server.App):
             "body {  "
             "width: 100wh;"
             "height: 90vh;"
-            "color: #fff;"
+            "color: #29298c;"
             "background: linear-gradient(-45deg, #23D5AB, #23A6D5, #ece71b, #36caa4);"
             "background-size: 400% 400%;"
             "-webkit-animation: Gradient 15s ease infinite;"

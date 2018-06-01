@@ -1,7 +1,9 @@
 # coding=utf-8
-# Spyre Скрипт, позволяющий выбирать из списка регион для отображения в табличном виде и на гистограмме в веб-браузере
+# Spyre Скрипт, позволяющий выбирать из списка регион, год, неделю, индекс для отображения в в веб-браузере
 # https://docs.python.org/3.1/library/csv.html
-# https://www.gradient-animator.com/
+# https://jeffdelaney.me/blog/useful-snippets-in-pandas/
+# https://docs.python.org/2/library/functions.html#range
+# https://www.pythoncentral.io/pythons-range-function-explained/
 
 import pandas as pd
 from spyre import server
@@ -9,9 +11,9 @@ from spyre import server
 server.include_df_index = True
 
 
-class SpyreSelectRegion(server.App):
+class SpyreSelectIndex(server.App):
     # заголовок
-    title = "Spyre Select Region"
+    title = "Spyre Select Index"
 
     # выпадающий список с файлами из директории .csv ("csv/" - объявлено далее в getData())
     inputs = [
@@ -19,14 +21,11 @@ class SpyreSelectRegion(server.App):
         # выпадающий список (регионы)
         {
             "type": "dropdown",
-            "id": "file",
-            "key": 'file',
+            "id": "region",
+            "label": "Область",
+            "key": 'region',
 
             "options": [
-                {"label": "2017 | Киевская", "value": '2017-id09-kiev.csv'},
-                {"label": "2018 | Киевская", "value": '2018-id09-kiev.csv'},
-                {"label": "2017-2018 | Киевская", "value": '2017-2018-id09-kiev.csv'},
-
                 {"label": "Cherkasy | Черкасская", "value": 'new_id_22_2018-05-27_14-33.csv'},
                 {"label": "Chernihiv | Черниговская", "value": "new_id_24_2018-05-27_14-33.csv"},
                 {"label": "Chernivtsi | Черновицкая", "value": "new_id_23_2018-05-27_14-33.csv"},
@@ -55,9 +54,75 @@ class SpyreSelectRegion(server.App):
             ],
 
             # значение по умолчанию
-            "value": "2018-id09-kiev.csv",
+            "value": "new_id_09_2018-05-27_14-33.csv",
+            "action_id": "update_data"
+        },
+
+        # выпадающий список (годы)
+        {
+            "type": "dropdown",
+            "id": "year",
+            "label": "Год",
+
+            "options": [
+                {"label": year, "value": year} for year in range(1981, 2019)
+            ],
+
+            "key": "year",
+            "action_id": "update_data"
+        },
+
+        # выпадающий список (недели 1)
+        {
+            "type": "dropdown",
+            "id": "week",
+            "label": "Неделя c",
+            "options": [
+                {"label": week_from, "value": week_from} for week_from in range(01, 53)
+            ],
+            "key": "week_from",
+            "action_id": "update_data"
+        },
+
+        # выпадающий список (недели 2)
+        {
+            "type": "dropdown",
+            "id": "week",
+            "label": "Неделя по",
+            "options": [
+                {"label": week_to, "value": week_to} for week_to in range(01, 53)
+            ],
+            "key": "week_to",
+            "action_id": "update_data"
+        },
+
+        # выпадающий список (индексы "SMN", "SMT", "VCI", "TCI", "VHI")
+        {
+            "type": "dropdown",
+            "id": "index",
+            "label": "Индексы",
+            "options": [
+
+                # VHI (Vegetation Health Index) - вегетационный индекс, основанный на отражении
+                #  видимого света растительным покровом, которое характеризует степень здоровья растительности
+                {"label": "VHI", "value": "VHI"},
+
+                # TCI (Temperature Condition Index)- индекс температурного режима
+                {"label": "TCI", "value": "TCI"},
+
+                # VCI (Vegetation Condition Index) - описывает степень подавленности растительного покрова
+                {"label": "VCI", "value": "VCI"},
+
+                # SMT (No noise Brightness Temperature)- сглаженная разница растительности
+                {"label": "SMT", "value": "SMT"},
+
+                # SMN (No noise Normalized Difference Vegetation Index) - сглаженная яркость температуры
+                {"label": "SMN", "value": "SMN"},
+            ],
+            "key": "index",
             "action_id": "update_data"
         }
+
     ]
 
     # кнопка ("Get Data | Загрузить данные")
@@ -67,11 +132,12 @@ class SpyreSelectRegion(server.App):
         "label": "Get Data | Загрузить данные"
     }]
 
-    # вкладки
+    # вкладки  (таблица, график, инфоблок)
     tabs = ["Table", "Plot", "Info"]
 
     # выходные данные (в таблицу, на график, в инфоблок)
     outputs = [
+
         {
             "type": "table",
             "id": "table_id",
@@ -79,6 +145,7 @@ class SpyreSelectRegion(server.App):
             "tab": "Table",
             "on_page_load": True
         },
+
         {
             "type": "plot",
             "id": "plot",
@@ -95,23 +162,44 @@ class SpyreSelectRegion(server.App):
 
     #  функция считывания данных из файла (в DataFrame)
     def getData(self, params):
-        filename = params["file"]
-        df = pd.read_csv("csv/" + filename,
+        #  объявляем переменные
+        region = params["region"]
+        year = int(params["year"])
+        week_from = int(params["week_from"])
+        week_to = int(params["week_to"])
+
+        df = pd.read_csv("csv/" + region,
                          delimiter='\,\s+|\,|\s+',
                          engine='python',
                          index_col=False,
                          names=["year", "week", "SMN", "SMT", "VCI", "TCI", "VHI"]
                          )
-        return df
+
+        # метод Pandas .ix (и .loc, iloc) позволяет выбрать конкретное значение «ячейки» (в DataFrame)
+        df = df.ix[df.year == year]
+
+        # Фильтрация DataFrames с условной логикой https://jeffdelaney.me/blog/useful-snippets-in-pandas/
+        filtered_data = df[(df.week >= week_from) & (df.week <= week_to)]
+
+        return filtered_data
 
     #  функция построения графика
     def getPlot(self, params):
-        df = self.getData(params).drop(['SMN', 'SMT'], axis=1).set_index(['week', 'year'])
+        df = self.getData(params).set_index(['week'])
+        #  объявляем переменные
+        year = params["year"]
+        week_from = params["week_from"]
+        week_to = params["week_to"]
+        indexes = params["index"]
+
+        # в DataFrame передаем значения выбранного индекса ("SMN", "SMT", "VCI", "TCI", "VHI")
+        df = df[[indexes]]
         plot_obj = df.plot()
-        plot_obj.set_ylabel("y - indexes, %")
-        plot_obj.set_xlabel("x - selected period (week | year)")
-        plot_obj.set_title("Weekly display of Data for the selected period")
-        plot_obj.grid()
+
+        plot_obj.set_title(indexes + " for the selected period of " + year)
+        plot_obj.set_ylabel(indexes + ", %")
+        plot_obj.set_xlabel("Selected period: weeks from " + week_from + " to " + week_to + " of " + year)
+
         line_plot = plot_obj.get_figure()
         return line_plot
 
@@ -122,7 +210,7 @@ class SpyreSelectRegion(server.App):
             "width: 100wh;"
             "height: 90vh;"
             "color: #29298c;"
-            "background: linear-gradient(-45deg, #EE7752, #E73C7E, #23A6D5, #23D5AB);"
+            "background: linear-gradient(-45deg, #23D5AB, #23A6D5, #ece71b, #36caa4);"
             "background-size: 400% 400%;"
             "-webkit-animation: Gradient 15s ease infinite;"
             "-moz-animation: Gradient 15s ease infinite;"
@@ -171,7 +259,7 @@ class SpyreSelectRegion(server.App):
 
 
 if __name__ == '__main__':
-    app = SpyreSelectRegion()
+    app = SpyreSelectIndex()
 
-    # запуск приложения http://127.0.0.1:9094
-    app.launch(port=9094)
+    # запуск приложения http://127.0.0.1:9098
+    app.launch(port=9098)
